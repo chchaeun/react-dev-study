@@ -172,12 +172,58 @@ const styleObj = { width: '100%' };
 
 ---
 
-### children
+## Array rendring
 
 ```jsx
-<Parent>
-    <ChildrenComponent>
-</Parent>
+<ul>
+  {Array.from({ length: 10 }).map((item) => (
+    <li key={item}>{item}</li>
+  ))}
+</ul>
 ```
 
-이렇게 사용되는 경우 Parent는 `children` prop을 가져야 합니다
+Array rendering에서 중요한 것은 `key` 속성이죠
+
+> key를 부여하지 않으면 eslint 등에 의한 에러를 보곤 합니다.
+> 설정해주지 않는 경우 React는 array index를 key로 자동으로 넣습니다.
+
+---
+
+### key의 설정
+
+- Array의 index를 사용하기
+- Math.random을 사용하기
+
+위는 React에서 하지 말라고 하는 방식들입니다
+
+`Reconciliation (재조정)`과정에서 효율적인 업데이트를 위해 사용하는 중요 속성이기 때문이죠
+
+각 key는 Fiber Node의 고유 식별자로 작용하여 효율적인 렌더링 최적화에 중요 역할을 합니다.
+
+> [Reconciliation Motivation](https://legacy.reactjs.org/docs/reconciliation.html#motivation)
+> 트리 -> 트리 연산 수 **최신** 알고리즘 조차 시간복잡도가 무려 O(n^3)
+
+---
+
+## 순수함수로의 컴포넌트?
+
+일반적인 React Project 생성 시 아래와 같이 StrintMode가 우리의 App을 감싸고 있습니다.
+그리고 이로인한 두번의 렌더링으로 우리에게 에러를 보여주기도 하죠
+
+```jsx
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+```
+
+---
+
+### Strict Mode
+
+> [React Strict Mode](https://ko.react.dev/learn/keeping-components-pure#detecting-impure-calculations-with-strict-mode)
+> React는 개발 중에 각 컴포넌트의 함수를 두 번 호출하는 “엄격 모드”를 제공합니다.
+> 컴포넌트 함수를 두 번 호출함으로써, 엄격 모드는 이러한 규칙을 위반하는 컴포넌트를 찾는데 도움을 줍니다.
+
+props와 state, context에 따라 두번 호출되어도, 동일한 결과를 내는지를 보여주는 게 목적이었습니다!

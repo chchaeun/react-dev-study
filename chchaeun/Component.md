@@ -90,7 +90,38 @@
     	)
     }
     ```
-    
+- 현석님과의 대화(Fetcher를 분리해야 하는 이유에 대해 설명이 부족한 것 같아 추가했습니다.)
+    - 현석 님: tanstack query 사용 시 suspense 옵션을 true로 주는걸로 List/Fetcher 분리 안해도 되지 않나요? useQuery 캐싱을 사용하려면 어차피 클라이언트 사이드여야 할테니 server/client랑은 상관없을거고요
+    - 저:
+    데이터 페칭을 따로 분리할 필요는 없는데 저는 데이터랑 ui를 렌더링하는 부분이랑 분리해야 책임이 나눠져서 좀 더 좋은 구조가 된다고 생각했어요! 
+        예를 들어서 
+        ```
+        <input name="title"/>
+        <input name="content"/>
+        ```
+        라는 컴포넌트가 있는데, (서버) 데이터가 있는 경우 value를 채워주고 싶다면 해당 컴포넌트에서 페칭하는 것보다
+        ```
+        const {error, data} = use___Query();
+        
+        <input name="title" value={error.status === 404 ? "": data.title}/>
+        <input name="content" value={error.status === 404 ? "": data.content}/>
+        ```
+        
+        부모에서 내려주는 게 좀 더 처리하기 좋다고 생각했거든요. (ErrorBoundary를 사용하면 또 error가 전역에서 캐치가 돼버리니까 따로 핸들링해줘야되고)
+        ```
+        const Component = ({data}) => {
+          <input name="title" value={data.title || ""}/>
+          <input name="content" value={data.content || ""}/>
+        }
+        ```
+        
+        그래서 항상 렌더링하는 부분에서 데이터를 페칭하지 말고 위에서 받아오는 형식으로 작성했는데 그러다보니까 원래 page에서 query를 불러왔다면, 이제는 suspense를 page에 작성해줄 거기 때문에 한단계 depth를 추가할 수밖에 없게 돼버린...
+        
+        [https://suspensive.org/ko/docs/react-query/SuspenseQuery](https://suspensive.org/ko/docs/react-query/SuspenseQuery)
+        여기에도 비슷하게 설명이 돼있더라구요! 
+    - 현석 님: 아 서스펜스를 위해 그렇게 해야한다~ 정도로 적어주신것 같았어서요 저도 페칭/로직파트와 View를 분리하는 VAC 패턴에 대해 알고는 이 패턴이 좋은 방식 같다고 생각하고 있습니다. 이전의 Container 패턴과 유사한데 해당 패턴이 테스트 관점, 역할 분리 관점에서 좋아보이는것 같습니다.
+
+
 - Suspense로 여러 개의 쿼리를 함께 처리하고 싶으면 SuspenseQueries를 사용하면 됩니다.
     - https://suspensive.org/ko/docs/react-query/SuspenseQueries
  
